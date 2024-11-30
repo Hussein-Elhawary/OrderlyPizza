@@ -1,0 +1,14 @@
+{"1":{"train.SRC": "one party sized stuffed crusts pizza with american cheese and a lot of peperonni",
+ "train.EXR": "(ORDER (PIZZAORDER (NUMBER 1 ) (SIZE PARTY_SIZE ) (STYLE STUFFED_CRUST ) (TOPPING AMERICAN_CHEESE ) (COMPLEX_TOPPING (QUANTITY EXTRA ) (TOPPING PEPPERONI ) ) ) )",
+  "train.TOP": "(ORDER (PIZZAORDER (NUMBER one ) (SIZE party sized ) (STYLE stuffed crusts ) pizza with (TOPPING american cheese ) and (COMPLEX_TOPPING (QUANTITY a lot of ) (TOPPING peperonni ) ) ) )", 
+  "train.TOP-DECOUPLED": "(ORDER (PIZZAORDER (NUMBER one ) (SIZE party sized ) (STYLE stuffed crusts ) (TOPPING american cheese ) (COMPLEX_TOPPING (QUANTITY a lot of ) (TOPPING peperonni ) ) ) )"},
+
+
+"2":{"train.SRC": "five 20 fl oz diet ice teas",
+ "train.EXR": "(ORDER (DRINKORDER (NUMBER 5 ) (VOLUME 20 FLOZ ) (DRINKTYPE DIET_ICE_TEA ) ) )",
+  "train.TOP": "(ORDER (DRINKORDER (NUMBER five ) (VOLUME 20 fl oz ) (DRINKTYPE diet ice teas ) ) )",
+   "train.TOP-DECOUPLED": "(ORDER (DRINKORDER (NUMBER five ) (VOLUME 20 fl oz ) (DRINKTYPE diet ice teas ) ) )"}
+
+
+
+}
