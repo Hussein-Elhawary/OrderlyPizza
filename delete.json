@@ -7,8 +7,12 @@
 "2":{"train.SRC": "five 20 fl oz diet ice teas",
  "train.EXR": "(ORDER (DRINKORDER (NUMBER 5 ) (VOLUME 20 FLOZ ) (DRINKTYPE DIET_ICE_TEA ) ) )",
   "train.TOP": "(ORDER (DRINKORDER (NUMBER five ) (VOLUME 20 fl oz ) (DRINKTYPE diet ice teas ) ) )",
-   "train.TOP-DECOUPLED": "(ORDER (DRINKORDER (NUMBER five ) (VOLUME 20 fl oz ) (DRINKTYPE diet ice teas ) ) )"}
+   "train.TOP-DECOUPLED": "(ORDER (DRINKORDER (NUMBER five ) (VOLUME 20 fl oz ) (DRINKTYPE diet ice teas ) ) )"},
 
+"3":{"train.SRC": "i'd like 7 pizza with beans and ten coffees",
+    "train.EXR": "(ORDER (DRINKORDER (NUMBER 10 ) (DRINKTYPE COFFEE ) ) (PIZZAORDER (NUMBER 7 ) (TOPPING BEANS ) ) )",
+     "train.TOP": "(ORDER i'd like (PIZZAORDER (NUMBER 7 ) pizza with (TOPPING beans ) ) and (DRINKORDER (NUMBER ten ) (DRINKTYPE coffees ) ) )",
+      "train.TOP-DECOUPLED": "(ORDER (PIZZAORDER (NUMBER 7 ) (TOPPING beans ) ) (DRINKORDER (NUMBER ten ) (DRINKTYPE coffees ) ) )"}
 
 
 }
