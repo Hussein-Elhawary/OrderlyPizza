@@ -1,2 +1,5 @@
 /dataset
 /sample_input_output
+
+/.vscode
+/src/__pycache__
