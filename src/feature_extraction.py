@@ -1,5 +1,4 @@
-from preprocess import preprocess_text as prt
-from preprocess import clean_text as ct
+from preprocess import *
 from sklearn.feature_extraction.text import TfidfVectorizer
 from gensim.models import Word2Vec
 from sklearn.preprocessing import normalize
@@ -49,7 +48,7 @@ def hybrid_features(data):
 
 if __name__ == '__main__':
     path = './try.json'
-    data = prt(path)
+    data = preprocess_text(path)
     data_as_strings = [' '.join(tokens) for tokens in data]
 
     tfidf_matrix, feature_names = extract_tfidf_features(data_as_strings)
@@ -60,6 +59,6 @@ if __name__ == '__main__':
     print("Word2Vec Model:\n", word2vec_model)
 
     text = rtc(path)
-    cleaned = ct(text)
+    cleaned = clean_text(text)
     embeddings = contextual_embeddings(cleaned)
     print("Contextual Embeddings:\n", embeddings)

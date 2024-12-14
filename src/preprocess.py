@@ -11,6 +11,15 @@ def clean_text(text):
         train_src_arr.append(match.group())
     return train_src_arr   
 
+def preprocess_train_top(text):
+    """Get the training topics from the text."""
+    pattern = r'(?<="train\.TOP": ").+(?=", "train\.TOP-DECOUPLED")'
+    train_top = re.finditer(pattern, text)
+    train_top_arr = []
+    for match in train_top:
+        train_top_arr.append(match.group())
+    return train_top_arr
+
 def tokenize_text(text, tokenizer):
     """Tokenize text using a given tokenizer."""
     tokens = tokenizer.tokenize(text)
@@ -27,9 +36,11 @@ def preprocess_text(path):
     return tokenized_text
 
 if __name__ == '__main__':
-    text = rtc('./try.json')
+    text = rtc('./test.json')
     cleaned = clean_text(text)
     print(cleaned)
     tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
     for i in range(len(cleaned)):
         print(tokenize_text(cleaned[i], tokenizer))
+
+
