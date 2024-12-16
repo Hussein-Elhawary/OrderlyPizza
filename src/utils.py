@@ -44,6 +44,15 @@ def read_test_cases(file_path):
     with open(file_path, 'r') as file:
         contents = file.read()
         return contents
+    
+def read_labels(file_path):
+    labels = []
+    with open(file_path, 'r') as file:
+        labels = file.read()
+    labels = labels[:-1]
+
+    label_list = labels.split("\n")
+    return label_list
 
 
 if __name__ == '__main__':
