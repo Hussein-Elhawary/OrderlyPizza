@@ -70,10 +70,18 @@ def parse_tc(train_SRC,train_TOP):
             #if label in ['ORDER', 'PIZZAORDER', 'NOT'] or label not in ['NUMBER']:
             match = re.search(re.escape(entity_text), train_SRC)
             if match:
-                entities.append({
-                    'label': label,
+                if label == "NOT":
+                    temp_entity = entities.pop()
+                    entities.append({
+                    'label': label+"-"+temp_entity['label'],
                     'word': match.group(),
-                })
+                    })
+
+                else:
+                    entities.append({
+                        'label': label,
+                        'word': match.group(),
+                    })
             text_accumulator.extend(text)
         else:
             text_accumulator.append(tree)

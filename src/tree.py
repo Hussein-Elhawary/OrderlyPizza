@@ -149,15 +149,15 @@ def parse_tc(train_SRC,train_TOP):
 
 
 if __name__ == '__main__':
-    text = rtc('./test.json')
+    text = read_test_cases('./test.json')
     toks = preprocess_train_top_decoupled(text)
-    # for i in range(len(toks)):
-    #     tree = linearized_rep_to_tree_rep(toks[i])
-    #     for pre, fill, node in RenderTree(tree):
-    #         print("%s%s" % (pre, node.id))
-    #     tags = traverse_tree(tree)
+    for i in range(len(toks)):
+        tree = linearized_rep_to_tree_rep(toks[i])
+        for pre, fill, node in RenderTree(tree):
+            print("%s%s" % (pre, node.id))
+        tags = traverse_tree(tree)
 
-    #     print(tags)
+        print(tags)
 
     result = parse_tc("","")
     
