@@ -1,5 +1,5 @@
 /dataset
 /sample_input_output
-
+/src/supcon_model/
 /.vscode
 /src/__pycache__
