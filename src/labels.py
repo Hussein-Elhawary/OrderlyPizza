@@ -12,7 +12,8 @@ print("first")
 for match in tcs:
     labels = re.finditer(pattern2, match.group())
     for label in labels:
-        unique_labels.add(label.group())
+        label = label.group().strip()
+        unique_labels.add(label)
 
 print(unique_labels)
 with open('unique_labels.txt', 'w') as f:
