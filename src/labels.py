@@ -12,7 +12,7 @@ print("first")
 for match in tcs:
     labels = re.finditer(pattern2, match.group())
     for label in labels:
-        label = label.group().strip()
+        label = label.group().strip(' ')
         unique_labels.add(label)
 
 print(unique_labels)
