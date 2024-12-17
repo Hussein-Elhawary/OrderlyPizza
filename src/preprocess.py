@@ -23,7 +23,7 @@ def clean_text(text):
 
 def preprocess_train_top_decoupled(text):
     """Get the training topics from the text."""
-    pattern = r'(?<="train.TOP-DECOUPLED": ").+(?="})'
+    pattern = r'(?<="train.TOP-DECOUPLED": ").+(?="\})'
     train_top = re.finditer(pattern, text)
     train_top_arr = []
     for match in train_top:
@@ -338,11 +338,15 @@ def train(model, train_dataset, batch_size=512, epochs=5, learning_rate=0.01):
                 | Train Accuracy: {epoch_acc}\n')
 
 if __name__ == '__main__':
-    data_path = "./try.json"  
-    try:
-        data = load_dataset('json', data_files=data_path)
-    except Exception as e:
-        raise ValueError(f"Failed to load dataset from {data_path}: {e}")
+    data_path = "./dataset/source.txt"  
+    # try:
+    #     data = load_dataset('json', data_files=data_path)
+    # except Exception as e:
+    #     raise ValueError(f"Failed to load dataset from {data_path}: {e}")
+
+    train_SRC,_,train_TOP_DECOUPLED = extract_sentences()
+    print(train_SRC[0])
+    print(len(train_SRC))
 
     ut_labels = read_unique_labels('./unique_labels.txt')
     #print("unique labels: ",ut_labels)
@@ -353,7 +357,7 @@ if __name__ == '__main__':
     
 
     #print("t_labels: ",t_labels)
-    train_SRC_size = len(data['train']['train.SRC'])
+    train_SRC_size = len(train_SRC)
     result = []
     tags = []
     longest_sentence = 0
@@ -363,14 +367,13 @@ if __name__ == '__main__':
     print("checkpoint 1")
     with open('input_labels.txt', 'w') as f:
         for i in range(train_SRC_size):
-            train_SRC = data['train']['train.SRC'][i]
-            train_TOP_DECOUPLED = data['train']['train.TOP-DECOUPLED'][i]
-            train_SRC_splited = train_SRC.split()
-            longest_sentence = max(len(train_SRC_splited), longest_sentence)    
-            unique_words.update(train_SRC_splited)            
+            train_SRC_item = train_SRC[i]
+            train_TOP_DECOUPLED_item = train_TOP_DECOUPLED[i]
+            longest_sentence = max(len(train_SRC_item.split()), longest_sentence)    
+            unique_words.update(train_SRC_item.split())            
             # print(train_SRC)
             # print(longest_sentence)
-            result.append(parse_tc(train_SRC,train_TOP_DECOUPLED))
+            result.append(parse_tc(train_SRC_item,train_TOP_DECOUPLED_item))
             #print(result[i])
             #print("entities above")
             tags.append(generate_bio_tags(result[i]['sentence'], result[i]['entities']))
@@ -382,18 +385,11 @@ if __name__ == '__main__':
                 #unique_labels.add(tag) if tag != '0' else None
                 f.write(f"{tag} ")
             f.write("\n")
-            train_SRC_labels.append(train_SRC_labels_list)
-            #print("--------------------------------------------------------")
-    print("checkpoint 2")
+            print("--------------------------------------------------------")
     # with open('unique_labels.txt', 'w') as f2:
     #     f2.write("\n".join(unique_labels))
-    train_SRC_data = data['train']['train.SRC']
-    co_embeddings = contextual_embeddings(train_SRC_data)
-    train_SRC_data2 = train_SRC_data.copy()
-    train_SRC_data2.append("i'd like a pizza with buffalo mozzarella grilled chicken pepperoni and parsley without thin crust")
-    #train_SRC_data2.append("i'd like a pizza with banana pepper grilled chicken and white onions without thin crust")
-    co_embeddings2 = contextual_embeddings(train_SRC_data2)
-
+    #train_SRC_data = data['train']['train.SRC']
+    co_embeddings = contextual_embeddings(train_SRC)
     #print(co_embeddings[0])
     #co_embeddings = co_embeddings[0]
     # Convert tags to indices
@@ -415,7 +411,8 @@ if __name__ == '__main__':
     word_to_index = create_word_indices(unique_words)
 
     # Convert sentences to word indices
-    sentence_indices = convert_sentences_to_indices(train_SRC_data, word_to_index, longest_sentence)
+    sentence_indices = convert_sentences_to_indices(train_SRC, word_to_index, longest_sentence)
+
 
     # Modified NER initialization
     model = NER(longest_sentence, co_embeddings, hidden_size=50, embedding_dim=768)
