@@ -39,6 +39,7 @@ def contextual_embeddings(data):
 
     # The last hidden state is the contextual embeddings
     embeddings = outputs.last_hidden_state
+    #print(embeddings.shape)
     return embeddings
 
 

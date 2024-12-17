@@ -54,7 +54,14 @@ def read_labels(file_path):
     label_list = labels.split("\n")
     return label_list
 
+def read_unique_labels(file_path):
+    labels = []
+    with open(file_path, 'r') as file:
+        labels = file.read().splitlines()
+    return labels
 
+    
+    
 if __name__ == '__main__':
     # Test read_test_cases
     read_test_cases('./try.json')
