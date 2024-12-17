@@ -2,7 +2,7 @@ from preprocess import *
 from sklearn.feature_extraction.text import TfidfVectorizer
 from gensim.models import Word2Vec
 from sklearn.preprocessing import normalize
-from utils import read_test_cases as rtc
+from utils import *
 import numpy as np
 from scipy.spatial.distance import euclidean, cosine
 import pandas as pd

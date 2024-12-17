@@ -3,7 +3,7 @@ import re
 
 #extract src data
 top_data=[]
-file_path =  '../../dataset/Pizza_train.json'
+file_path =  '../dataset/PIZZA_train.json'
 with open(file_path, 'r') as file:
     lines=file.readlines()
     for i,line in enumerate(lines):
