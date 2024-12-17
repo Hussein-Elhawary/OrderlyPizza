@@ -307,7 +307,7 @@ def train(model, train_dataset, batch_size=512, epochs=5, learning_rate=0.01):
             # print(output.size(-1),"output.view")
             # print(train_label.view(-1).shape,"train_label.view")
             # (7) loss calculation (you need to think in this part how to calculate the loss correctly)
-            batch_loss = criterion(output.reshape(-1,19), train_label.view(-1))
+            batch_loss = criterion(output.reshape(-1,output.size(-1)), train_label.view(-1))
 
             # (8) append the batch loss to the total_loss_train
             total_loss_train += batch_loss.item()
@@ -338,13 +338,16 @@ def train(model, train_dataset, batch_size=512, epochs=5, learning_rate=0.01):
                 | Train Accuracy: {epoch_acc}\n')
 
 if __name__ == '__main__':
-    data_path = "./dataset/source.txt"  
+    # data_path = "./dataset/source.txt"  
     # try:
     #     data = load_dataset('json', data_files=data_path)
     # except Exception as e:
     #     raise ValueError(f"Failed to load dataset from {data_path}: {e}")
 
     train_SRC,_,train_TOP_DECOUPLED = extract_sentences()
+    train_SRC = train_SRC[:100]
+    train_TOP_DECOUPLED = train_TOP_DECOUPLED[:100]
+    
     print(train_SRC[0])
     print(len(train_SRC))
 
@@ -360,32 +363,32 @@ if __name__ == '__main__':
     train_SRC_size = len(train_SRC)
     result = []
     tags = []
-    longest_sentence = 0
+    longest_sentence = 30
     train_SRC_labels = []
     unique_labels = set()
     unique_words = set()
     print("checkpoint 1")
-    with open('input_labels.txt', 'w') as f:
-        for i in range(train_SRC_size):
-            train_SRC_item = train_SRC[i]
-            train_TOP_DECOUPLED_item = train_TOP_DECOUPLED[i]
-            longest_sentence = max(len(train_SRC_item.split()), longest_sentence)    
-            unique_words.update(train_SRC_item.split())            
-            # print(train_SRC)
-            # print(longest_sentence)
-            result.append(parse_tc(train_SRC_item,train_TOP_DECOUPLED_item))
-            #print(result[i])
-            #print("entities above")
-            tags.append(generate_bio_tags(result[i]['sentence'], result[i]['entities']))
-            #print(tags[i])
-            train_SRC_labels_list = []
-            for word, tag in tags[i]:
-                #print(f"{word}: {tag}")
-                train_SRC_labels_list.append(tag)
-                #unique_labels.add(tag) if tag != '0' else None
-                f.write(f"{tag} ")
-            f.write("\n")
-            print("--------------------------------------------------------")
+    # with open('input_labels.txt', 'w') as f:
+    #     for i in range(train_SRC_size):
+    #         train_SRC_item = train_SRC[i]
+    #         train_TOP_DECOUPLED_item = train_TOP_DECOUPLED[i]
+    #         longest_sentence = max(len(train_SRC_item.split()), longest_sentence)    
+    #         unique_words.update(train_SRC_item.split())            
+    #         # print(train_SRC)
+    #         # print(longest_sentence)
+    #         result.append(parse_tc(train_SRC_item,train_TOP_DECOUPLED_item))
+    #         #print(result[i])
+    #         #print("entities above")
+    #         tags.append(generate_bio_tags(result[i]['sentence'], result[i]['entities']))
+    #         #print(tags[i])
+    #         train_SRC_labels_list = []
+    #         for word, tag in tags[i]:
+    #             #print(f"{word}: {tag}")
+    #             train_SRC_labels_list.append(tag)
+    #             #unique_labels.add(tag) if tag != '0' else None
+    #             f.write(f"{tag} ")
+    #         f.write("\n")
+    #         print("--------------------------------------------------------")
     # with open('unique_labels.txt', 'w') as f2:
     #     f2.write("\n".join(unique_labels))
     #train_SRC_data = data['train']['train.SRC']
@@ -427,7 +430,7 @@ if __name__ == '__main__':
     print(len(unique_words))
     #raise KeyError
     print("checkpoint 3")
-    train(model, train_dataset, batch_size=512, epochs=5, learning_rate=0.1)
+    train(model, train_dataset, batch_size=512, epochs=5, learning_rate=0.01)
 
     ###################################################################################################
 
