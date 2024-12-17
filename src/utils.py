@@ -138,8 +138,17 @@ def create_labels_file(file_path,output_file):
 if __name__ == '__main__':
     # Test read_test_cases
     #clearead_test_cases('./try.json')
-    path_file = '../dataset/PIZZA_train.json'
+    path_file = '../dataset/input_labels.txt'
     # output_file = 'input_labels2.txt'
     # create_labels_file(path_file, output_file)
-    output_file_path = 'src.txt'
-    convert_json_txt(path_file,output_file_path)
+    with open(path_file, 'r',encoding='utf-8') as file:
+        source_data = file.read().split()
+
+    set_source_data = set(source_data)
+    set_source_data.remove('0')
+    
+    with open("unique_labels.txt", 'w', encoding='utf-8') as file:
+        for label in set_source_data:
+            file.write(f"{label}\n")
+
+    
