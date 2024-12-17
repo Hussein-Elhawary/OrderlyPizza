@@ -172,6 +172,7 @@ def convert_sentences_to_indices(sentences, word_to_index, max_length):
         sentence_indices += [word_to_index['<PAD>']] * (max_length - len(sentence_indices))
         indexed_sentences.append(sentence_indices)
     return torch.tensor(indexed_sentences, dtype=torch.long)
+
 class NERDataset(torch.utils.data.Dataset):
 
   def __init__(self, x, y, max_len):
@@ -185,8 +186,6 @@ class NERDataset(torch.utils.data.Dataset):
     # i guess x should be extended to have the same length as y
     self.x_tensor = x
     self.y_tensor = torch.tensor([seq + [0] * (max_len - len(seq)) for seq in y], dtype=torch.long)
-    print(self.x_tensor.shape)
-    print(self.y_tensor.shape)
     #################################################################################################################
 
   def __len__(self):
@@ -208,7 +207,7 @@ class NERDataset(torch.utils.data.Dataset):
     ##########################################################################################
 
 class NER(nn.Module):
-    def __init__(self, n_classes, vocab_size, embedding_dim=50, hidden_size=50, contextual_embedding_dim=768):
+    def __init__(self, n_classes, embeddings, hidden_size=50, embedding_dim=768):
         """
         The constructor of our NER model
         Inputs:
@@ -218,18 +217,19 @@ class NER(nn.Module):
         """
         super(NER, self).__init__()
         ## Word embedding layer
-        self.embedding = nn.Embedding(vocab_size, embedding_dim)
+        #self.embedding = nn.Embedding(vocab_size, embedding_dim)
+        self.embedding = embeddings
         
         # Combine word and contextual embeddings
-        combined_embedding_dim = embedding_dim + contextual_embedding_dim
+        #combined_embedding_dim = embedding_dim + contextual_embedding_dim
         
         # LSTM layer with combined embedding
-        self.lstm = nn.LSTM(combined_embedding_dim, hidden_size, batch_first=True)
+        self.lstm = nn.LSTM(embedding_dim, hidden_size, batch_first=True)
         
         # Linear layer
         self.linear = nn.Linear(hidden_size, n_classes)
 
-    def forward(self, sentences, contextual_embeddings):
+    def forward(self, embeddings):
         """
         This function does the forward pass of our model
         Inputs:
@@ -240,21 +240,21 @@ class NER(nn.Module):
         """
 
         # Word embeddings
-        word_embedded = self.embedding(sentences)
+        #word_embedded = self.embedding(sentences)
 
         # Ensure contextual embeddings have the same dimensions as word embeddings
-        contextual_embeddings = contextual_embeddings[:, :word_embedded.size(1), :]
+        #contextual_embeddings = contextual_embeddings[:, :word_embedded.size(1), :]
 
         # Concatenate word and contextual embeddings
-        combined_embeddings = torch.cat([word_embedded, contextual_embeddings], dim=-1)
+        #combined_embeddings = torch.cat([word_embedded, contextual_embeddings], dim=-1)
         
         # LSTM and linear layers
-        lstm_out, _ = self.lstm(combined_embeddings)
+        lstm_out, _ = self.lstm(embeddings)
         final_output = self.linear(lstm_out)
         
         return final_output
   
-def train(model, train_dataset, contextual_embeddings, batch_size=512, epochs=5, learning_rate=0.01):
+def train(model, train_dataset, batch_size=512, epochs=5, learning_rate=0.01):
     """
     This function implements the training logic
     Inputs:
@@ -282,7 +282,9 @@ def train(model, train_dataset, contextual_embeddings, batch_size=512, epochs=5,
     if use_cuda:
         model = model.cuda()
         criterion = criterion.cuda()
-
+    else:
+        print("CUDA is not available. Training on CPU ...")
+    
     for epoch_num in range(epochs):
         total_acc_train = 0
         total_loss_train = 0
@@ -291,15 +293,21 @@ def train(model, train_dataset, contextual_embeddings, batch_size=512, epochs=5,
             #print(train_input[0])
             # (4) move the train input to the device
             train_label = train_label.to(device)
+            train_input = train_input.to(device)
 
             # (5) move the train label to the device
-            train_input = train_input.to(device)
-            contextual_embeddings = contextual_embeddings.to(device)
+
+            #embeddings = embeddings.to(device)
             # (6) do the forward pass
-            output = model(train_input, contextual_embeddings[:, :train_input.size(1), :])
-            
+            output = model(train_input[:, :train_input.size(1), :])
+            output = output.permute(0, 2, 1) 
+            # print(output.shape,"output")
+            # print(train_label.shape,"train_label")
+            # print(output.reshape(-1,19).shape,"output.view1")
+            # print(output.size(-1),"output.view")
+            # print(train_label.view(-1).shape,"train_label.view")
             # (7) loss calculation (you need to think in this part how to calculate the loss correctly)
-            batch_loss = criterion(output.view(-1, output.size(-1)), train_label.view(-1))
+            batch_loss = criterion(output.reshape(-1,19), train_label.view(-1))
 
             # (8) append the batch loss to the total_loss_train
             total_loss_train += batch_loss.item()
@@ -330,13 +338,13 @@ def train(model, train_dataset, contextual_embeddings, batch_size=512, epochs=5,
                 | Train Accuracy: {epoch_acc}\n')
 
 if __name__ == '__main__':
-    data_path = "./test.json"  
+    data_path = "./try.json"  
     try:
         data = load_dataset('json', data_files=data_path)
     except Exception as e:
         raise ValueError(f"Failed to load dataset from {data_path}: {e}")
 
-    ut_labels = read_unique_labels('unique_labels.txt')
+    ut_labels = read_unique_labels('./unique_labels.txt')
     #print("unique labels: ",ut_labels)
     t_labels = {}
     t_labels['0'] = 0
@@ -352,12 +360,14 @@ if __name__ == '__main__':
     train_SRC_labels = []
     unique_labels = set()
     unique_words = set()
+    print("checkpoint 1")
     with open('input_labels.txt', 'w') as f:
         for i in range(train_SRC_size):
             train_SRC = data['train']['train.SRC'][i]
             train_TOP_DECOUPLED = data['train']['train.TOP-DECOUPLED'][i]
-            longest_sentence = max(len(train_SRC.split()), longest_sentence)    
-            unique_words.update(train_SRC.split())            
+            train_SRC_splited = train_SRC.split()
+            longest_sentence = max(len(train_SRC_splited), longest_sentence)    
+            unique_words.update(train_SRC_splited)            
             # print(train_SRC)
             # print(longest_sentence)
             result.append(parse_tc(train_SRC,train_TOP_DECOUPLED))
@@ -365,21 +375,30 @@ if __name__ == '__main__':
             #print("entities above")
             tags.append(generate_bio_tags(result[i]['sentence'], result[i]['entities']))
             #print(tags[i])
+            train_SRC_labels_list = []
             for word, tag in tags[i]:
                 #print(f"{word}: {tag}")
-                train_SRC_labels.append(tag)
+                train_SRC_labels_list.append(tag)
                 #unique_labels.add(tag) if tag != '0' else None
                 f.write(f"{tag} ")
             f.write("\n")
+            train_SRC_labels.append(train_SRC_labels_list)
             #print("--------------------------------------------------------")
+    print("checkpoint 2")
     # with open('unique_labels.txt', 'w') as f2:
     #     f2.write("\n".join(unique_labels))
     train_SRC_data = data['train']['train.SRC']
     co_embeddings = contextual_embeddings(train_SRC_data)
+    train_SRC_data2 = train_SRC_data.copy()
+    train_SRC_data2.append("i'd like a pizza with buffalo mozzarella grilled chicken pepperoni and parsley without thin crust")
+    #train_SRC_data2.append("i'd like a pizza with banana pepper grilled chicken and white onions without thin crust")
+    co_embeddings2 = contextual_embeddings(train_SRC_data2)
+
     #print(co_embeddings[0])
     #co_embeddings = co_embeddings[0]
     # Convert tags to indices
     tag_indices = [[t_labels[tag] for _, tag in sentence_tags] for sentence_tags in tags]
+    #print("tags",tags)
 
     #print("tags: ",tag_indices)
     #train_dataset = NERDataset(co_embeddings, tag_indices, len(ut_labels))
@@ -398,13 +417,20 @@ if __name__ == '__main__':
     # Convert sentences to word indices
     sentence_indices = convert_sentences_to_indices(train_SRC_data, word_to_index, longest_sentence)
 
-
     # Modified NER initialization
-    model = NER(len(t_labels), len(word_to_index))
-
+    model = NER(longest_sentence, co_embeddings, hidden_size=50, embedding_dim=768)
+    # print("tag_indices",word_to_index)
+    # print("sentence_indices",sentence_indices)
+    # raise KeyError
+    print("longest sentence",longest_sentence)
     # Create dataset with word indices instead of contextual embeddings
-    train_dataset = NERDataset(sentence_indices, tag_indices, longest_sentence)    # i think instead of longest sentence it should be len(ut_labels)
-    train(model, train_dataset, co_embeddings)
+    train_dataset = NERDataset(co_embeddings, tag_indices, longest_sentence)    # i think instead of longest sentence it should be len(ut_labels)
+    print("train_dataset 0",sentence_indices.shape)
+    print("train_dataset 1",tag_indices)
+    print(len(unique_words))
+    #raise KeyError
+    print("checkpoint 3")
+    train(model, train_dataset, batch_size=512, epochs=5, learning_rate=0.1)
 
     ###################################################################################################
 
