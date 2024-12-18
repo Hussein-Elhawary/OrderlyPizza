@@ -410,10 +410,13 @@ if __name__ == '__main__':
     # except Exception as e:
     #     raise ValueError(f"Failed to load dataset from {data_path}: {e}")
 
-    train_SRC,train_TOP = read_dev_dataset()
+    train_SRC,train_TOP = read_dev_dataset('./dataset/PIZZA_dev.json')
     train_SRC = train_SRC
     train_TOP = train_TOP
     
+
+    train_TOP[0] = "(ORDER i want to order (PIZZAORDER (NUMBER two ) (SIZE medium ) pizzas with (TOPPING sausage ) and (TOPPING black olives ) ) and (PIZZAORDER (NUMBER two ) (SIZE medium ) pizzas with (TOPPING pepperoni ) and (COMPLEX_TOPPING (QUANTITY extra ) (TOPPING cheese ) ) ) and (PIZZAORDER (NUMBER three ) (SIZE large ) pizzas with (TOPPING pepperoni ) and (TOPPING sausage ) ) )"
+
     print(train_SRC[0])
     print(len(train_SRC))
 
@@ -457,35 +460,70 @@ if __name__ == '__main__':
             train_SRC_item_words = train_SRC_item.replace("(","( ").split(" ")
             train_TOP_item_words = train_TOP_item.replace("(","( ").split(" ")
             string_labels = []
-            while index_src < len(train_SRC_item_words) and index_top < len(train_TOP_item_words):
-                if train_SRC_item_words[index_src] == train_TOP_item_words[index_top]:
-                    index_src += 1
-                    index_top += 1
-                    j = index_top-1
-                    while train_TOP_item_words[j] not in labels:
-                        j -= 1
-                    if j == index_top-2:
-                        string_labels.append(t_labels["B-"+train_TOP_item_words[j]])
+            tokens = []
+            b = True
+            last_not = False
+            for j in range(len(train_TOP_item_words)):
+                if train_TOP_item_words[j] == "(":
+                    if train_TOP_item_words[j+1] == "NOT":
+                        tokens.append("NOT")
+                        last_not = True
+                    elif last_not == True:
+                        tokens.append("NOT-"+train_TOP_item_words[j+1])
+                        last_not = False
                     else:
-                        string_labels.append(t_labels["I-"+train_TOP_item_words[j]])
-                else:
-                    index_top += 1
-            train_SRC_labels_list.append(string_labels)
-            print("train_SRC_labels_list",train_SRC_labels_list[i])
+                        tokens.append(train_TOP_item_words[j+1])
 
-            #####################################################################    
-            # # print(train_SRC)
-            # # print(longest_sentence)
-            # result.append(parse_tc(train_SRC_item,train_TOP_item))
-            # #print(result[i])
-            # #print("entities above")
-            # tags.append(generate_bio_tags(result[i]['sentence'], result[i]['entities']))
-            # #print(tags[i])
-            # train_SRC_labels_list = []
-            for word in string_labels:
-                #unique_labels.add(tag) if tag != '0' else None
-                f.write(f"{word} ")
-            f.write("\n")
+                    b = True
+                elif train_TOP_item_words[j] == ")":
+                    tokens.pop()
+                elif train_TOP_item_words[j] in labels or train_TOP_item_words[j] == "NOT":
+                    continue
+                else:
+                    if tokens[-1] in ["PIZZAORDER","ORDER","DRINKORDER"]:
+                        string_labels.append("0")
+                    elif b == True:
+                        string_labels.append("B-"+tokens[-1])
+                        b = False
+                    else:
+                        string_labels.append("I-"+tokens[-1])
+
+            print(tokens)
+            print(string_labels)
+            print("--------------------------------------------------------")
+            print(train_SRC_item)
+            print(i)
+            assert i!=10,"stop"
+
+            # while index_src < len(train_SRC_item_words) and index_top < len(train_TOP_item_words):
+            #     if train_SRC_item_words[index_src] == train_TOP_item_words[index_top]:
+            #         index_src += 1
+            #         index_top += 1
+            #         j = index_top-1
+            #         while train_TOP_item_words[j] not in labels:
+            #             j -= 1
+            #         if j == index_top-2:
+            #             string_labels.append(t_labels["B-"+train_TOP_item_words[j]])
+            #         else:
+            #             string_labels.append(t_labels["I-"+train_TOP_item_words[j]])
+            #     else:
+            #         index_top += 1
+            # train_SRC_labels_list.append(string_labels)
+            # print("train_SRC_labels_list",train_SRC_labels_list[i])
+
+            # #####################################################################    
+            # # # print(train_SRC)
+            # # # print(longest_sentence)
+            # # result.append(parse_tc(train_SRC_item,train_TOP_item))
+            # # #print(result[i])
+            # # #print("entities above")
+            # # tags.append(generate_bio_tags(result[i]['sentence'], result[i]['entities']))
+            # # #print(tags[i])
+            # # train_SRC_labels_list = []
+            # for word in string_labels:
+            #     #unique_labels.add(tag) if tag != '0' else None
+            #     f.write(f"{word} ")
+            # f.write("\n")
             print("--------------------------------------------------------")
     # with open('unique_labels.txt', 'w') as f2:
     #     f2.write("\n".join(unique_labels))
