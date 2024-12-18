@@ -5,3 +5,4 @@
 /src/__pycache__
 /src/*.pyc
 /src/models_lstm
+/src/models_tested
