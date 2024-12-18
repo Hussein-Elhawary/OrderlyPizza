@@ -410,16 +410,11 @@ if __name__ == '__main__':
     # except Exception as e:
     #     raise ValueError(f"Failed to load dataset from {data_path}: {e}")
 
-    train_SRC,train_TOP = read_dev_dataset('./dataset/PIZZA_dev.json')
+    # train_SRC,train_TOP = read_dev_dataset('./dataset/PIZZA_dev.json')
+    train_SRC,train_TOP = extract_sentences()
     train_SRC = train_SRC
     train_TOP = train_TOP
     
-
-    train_TOP[0] = "(ORDER i want to order (PIZZAORDER (NUMBER two ) (SIZE medium ) pizzas with (TOPPING sausage ) and (TOPPING black olives ) ) and (PIZZAORDER (NUMBER two ) (SIZE medium ) pizzas with (TOPPING pepperoni ) and (COMPLEX_TOPPING (QUANTITY extra ) (TOPPING cheese ) ) ) and (PIZZAORDER (NUMBER three ) (SIZE large ) pizzas with (TOPPING pepperoni ) and (TOPPING sausage ) ) )"
-
-    print(train_SRC[0])
-    print(len(train_SRC))
-
     ut_labels = read_unique_labels('./src/unique_labels.txt')
     #print("unique labels: ",ut_labels)
     t_labels = {}
@@ -447,7 +442,7 @@ if __name__ == '__main__':
     labels = set(labels)
 
     print("checkpoint 1")
-    with open('./dataset/input_labels_top_dev.txt', 'w') as f:
+    with open('./dataset/input_labels_top.txt', 'w') as f:
         for i in range(train_SRC_size):
             train_SRC_item = train_SRC[i]
             train_TOP_item = train_TOP[i]
@@ -488,12 +483,12 @@ if __name__ == '__main__':
                     else:
                         string_labels.append("I-"+tokens[-1])
 
-            print(tokens)
-            print(string_labels)
-            print("--------------------------------------------------------")
-            print(train_SRC_item)
-            print(i)
-            assert i!=10,"stop"
+            # print(tokens)
+            # print(string_labels)
+            # print("--------------------------------------------------------")
+            # print(train_SRC_item)
+            # print(i)
+            # assert i!=10,"stop"
 
             # while index_src < len(train_SRC_item_words) and index_top < len(train_TOP_item_words):
             #     if train_SRC_item_words[index_src] == train_TOP_item_words[index_top]:
@@ -520,10 +515,10 @@ if __name__ == '__main__':
             # # tags.append(generate_bio_tags(result[i]['sentence'], result[i]['entities']))
             # # #print(tags[i])
             # # train_SRC_labels_list = []
-            # for word in string_labels:
-            #     #unique_labels.add(tag) if tag != '0' else None
-            #     f.write(f"{word} ")
-            # f.write("\n")
+            for word in string_labels:
+                #unique_labels.add(tag) if tag != '0' else None
+                f.write(f"{word} ")
+            f.write("\n")
             print("--------------------------------------------------------")
     # with open('unique_labels.txt', 'w') as f2:
     #     f2.write("\n".join(unique_labels))
