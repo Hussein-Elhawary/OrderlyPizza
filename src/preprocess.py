@@ -30,6 +30,28 @@ def preprocess_train_top_decoupled(text):
         train_top_arr.append(match.group())
     return train_top_arr
 
+def read_dev_dataset(file_path):
+
+    with open(file_path, 'r') as file:
+        text = file.read()
+        
+    pattern_src = r'(?<="dev\.SRC": ").+(?=", "dev\.EXR")'
+    pattern_top = r'(?<="dev\.TOP": ").+(?=", "dev\.PCFG_ERR")'
+    test_src = re.finditer(pattern_src, text)
+    test_top = re.finditer(pattern_top, text)
+    test_src_arr = []
+    test_top_decoupled_arr = []
+
+    for match in test_src:
+        test_src_arr.append(match.group())
+    
+    pattern_top_decoupled = r'(?<=\))[\w ]*(?= \()|(?<=ORDER)[\w ]*(?= \()|(?<=PIZZAORDER)[\w ]*(?= \()|(?<=DRINKORDER)[\w ]*(?= \()'
+    for match in test_top:
+        temp = re.sub(pattern_top_decoupled,'',match.group())
+        test_top_decoupled_arr.append(temp)
+
+    return test_src_arr, test_top_decoupled_arr
+
 def tokenize_text(text, tokenizer):
     """Tokenize text using a given tokenizer."""
     tokens = tokenizer.tokenize(text)
@@ -154,6 +176,47 @@ def generate_bio_tags(sentence, entities):
                 break  
     
     return list(zip(words, bio_tags))
+
+def create_test_labels_input():
+    longest_sentence = 0
+    unique_words = set()
+    result = []
+    tags = []
+    # ut_labels = read_unique_labels('./unique_labels.txt')
+    # t_labels = {}
+    # t_labels['0'] = 0
+    # for i in range(len(ut_labels)):
+    #     t_labels[ut_labels[i]] = i+1
+    
+    test_SRC, test_TOP_DECOUPLED = read_dev_dataset("../dataset/PIZZA_dev.json")
+    print(test_SRC[0])
+    print(len(test_SRC))
+    print(test_TOP_DECOUPLED[0])
+    print(len(test_TOP_DECOUPLED))
+    test_SRC_size = len(test_SRC)
+
+    with open('../dataset/test_input_labels.txt', 'w') as f:
+        for i in range(test_SRC_size):
+            test_SRC_item = test_SRC[i]
+            test_TOP_DECOUPLED_item = test_TOP_DECOUPLED[i]
+            longest_sentence = max(len(test_SRC_item.split()), longest_sentence)    
+            unique_words.update(test_SRC_item.split())            
+            # print(train_SRC)
+            # print(longest_sentence)
+            result.append(parse_tc(test_SRC_item,test_TOP_DECOUPLED_item))
+            #print(result[i])
+            #print("entities above")
+            tags.append(generate_bio_tags(result[i]['sentence'], result[i]['entities']))
+            #print(tags[i])
+            test_SRC_labels_list = []
+            for word, tag in tags[i]:
+                #print(f"{word}: {tag}")
+                test_SRC_labels_list.append(tag)
+                #unique_labels.add(tag) if tag != '0' else None
+                f.write(f"{tag} ")
+            f.write("\n")
+            #print("--------------------------------------------------------")
+    print(longest_sentence)
 
 def create_word_indices(unique_words):
     """Create a mapping of words to indices."""
@@ -343,7 +406,8 @@ if __name__ == '__main__':
     #     data = load_dataset('json', data_files=data_path)
     # except Exception as e:
     #     raise ValueError(f"Failed to load dataset from {data_path}: {e}")
-
+    create_test_labels_input()
+    raise KeyError
     train_SRC,_,train_TOP_DECOUPLED = extract_sentences()
     train_SRC = train_SRC[:100]
     train_TOP_DECOUPLED = train_TOP_DECOUPLED[:100]
