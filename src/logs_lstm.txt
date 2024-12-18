@@ -18,3 +18,17 @@ Epoch 1/2, Loss: 750.3750225936169, Accuracy: 0.15893703699111938
 Time for epoch 1: 476.46 seconds
 Epoch 2/2, Loss: 747.8617608274312, Accuracy: 0.2977852523326874
 Time for epoch 2: 482.67 seconds
+Epoch 1/5, Loss: 904.564212484215, Accuracy: 0.31364238262176514
+Time for epoch 1: 200.32 seconds
+Epoch 1/5, Loss: 904.3288580331097, Accuracy: 0.31259238719940186
+Time for epoch 1: 178.22 seconds
+Epoch 1/5, Loss: 904.3801082946663, Accuracy: 0.3196921646595001
+Time for epoch 1: 177.33 seconds
+Epoch 2/5, Loss: 902.7682277566859, Accuracy: 0.3244918882846832
+Time for epoch 2: 173.50 seconds
+Epoch 3/5, Loss: 902.1861655008903, Accuracy: 0.3228682577610016
+Time for epoch 3: 177.16 seconds
+Epoch 4/5, Loss: 901.6743225782288, Accuracy: 0.3262249827384949
+Time for epoch 4: 174.18 seconds
+Epoch 5/5, Loss: 901.2628325637934, Accuracy: 0.32243525981903076
+Time for epoch 5: 171.82 seconds
