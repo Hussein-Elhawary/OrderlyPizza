@@ -41,16 +41,19 @@ def read_dev_dataset(file_path):
     test_top = re.finditer(pattern_top, text)
     test_src_arr = []
     test_top_decoupled_arr = []
+    test_top_arr = []
+
 
     for match in test_src:
         test_src_arr.append(match.group())
     
-    pattern_top_decoupled = r'(?<=\))[\w ]*(?= \()|(?<=ORDER)[\w ]*(?= \()|(?<=PIZZAORDER)[\w ]*(?= \()|(?<=DRINKORDER)[\w ]*(?= \()'
     for match in test_top:
-        temp = re.sub(pattern_top_decoupled,'',match.group())
-        test_top_decoupled_arr.append(temp)
-
-    return test_src_arr, test_top_decoupled_arr
+        test_top_arr.append(match.group())
+    # pattern_top_decoupled = r'(?<=\))[\w ]*(?= \()|(?<=ORDER)[\w ]*(?= \()|(?<=PIZZAORDER)[\w ]*(?= \()|(?<=DRINKORDER)[\w ]*(?= \()'
+    # for match in test_top:
+    #     temp = re.sub(pattern_top_decoupled,'',match.group())
+    #     test_top_decoupled_arr.append(temp)
+    return test_src_arr,test_top_arr
 
 def tokenize_text(text, tokenizer):
     """Tokenize text using a given tokenizer."""
@@ -406,22 +409,21 @@ if __name__ == '__main__':
     #     data = load_dataset('json', data_files=data_path)
     # except Exception as e:
     #     raise ValueError(f"Failed to load dataset from {data_path}: {e}")
-    create_test_labels_input()
-    raise KeyError
-    train_SRC,_,train_TOP_DECOUPLED = extract_sentences()
-    train_SRC = train_SRC[:100]
-    train_TOP_DECOUPLED = train_TOP_DECOUPLED[:100]
+
+    train_SRC,train_TOP = read_dev_dataset()
+    train_SRC = train_SRC
+    train_TOP = train_TOP
     
     print(train_SRC[0])
     print(len(train_SRC))
 
-    ut_labels = read_unique_labels('./unique_labels.txt')
+    ut_labels = read_unique_labels('./src/unique_labels.txt')
     #print("unique labels: ",ut_labels)
     t_labels = {}
     t_labels['0'] = 0
     for i in range(len(ut_labels)):
         t_labels[ut_labels[i]] = i+1
-    
+        print(ut_labels[i],i+1)
 
     #print("t_labels: ",t_labels)
     train_SRC_size = len(train_SRC)
@@ -431,35 +433,68 @@ if __name__ == '__main__':
     train_SRC_labels = []
     unique_labels = set()
     unique_words = set()
+    train_SRC_labels_list = []
+    labels = []
+    for i in range(len(ut_labels)):
+        labels.append(ut_labels[i][2:])
+    labels.append("ORDER")
+    labels.append("PIZZAORDER")
+    labels.append("DRINKORDER")
+
+    labels = set(labels)
+
     print("checkpoint 1")
-    # with open('input_labels.txt', 'w') as f:
-    #     for i in range(train_SRC_size):
-    #         train_SRC_item = train_SRC[i]
-    #         train_TOP_DECOUPLED_item = train_TOP_DECOUPLED[i]
-    #         longest_sentence = max(len(train_SRC_item.split()), longest_sentence)    
-    #         unique_words.update(train_SRC_item.split())            
-    #         # print(train_SRC)
-    #         # print(longest_sentence)
-    #         result.append(parse_tc(train_SRC_item,train_TOP_DECOUPLED_item))
-    #         #print(result[i])
-    #         #print("entities above")
-    #         tags.append(generate_bio_tags(result[i]['sentence'], result[i]['entities']))
-    #         #print(tags[i])
-    #         train_SRC_labels_list = []
-    #         for word, tag in tags[i]:
-    #             #print(f"{word}: {tag}")
-    #             train_SRC_labels_list.append(tag)
-    #             #unique_labels.add(tag) if tag != '0' else None
-    #             f.write(f"{tag} ")
-    #         f.write("\n")
-    #         print("--------------------------------------------------------")
+    with open('./dataset/input_labels_top_dev.txt', 'w') as f:
+        for i in range(train_SRC_size):
+            train_SRC_item = train_SRC[i]
+            train_TOP_item = train_TOP[i]
+            longest_sentence = max(len(train_SRC_item.split()), longest_sentence)    
+            unique_words.update(train_SRC_item.split())      
+            ####################################################################
+            index_src = 0
+            index_top = 0
+            
+            train_SRC_item_words = train_SRC_item.replace("(","( ").split(" ")
+            train_TOP_item_words = train_TOP_item.replace("(","( ").split(" ")
+            string_labels = []
+            while index_src < len(train_SRC_item_words) and index_top < len(train_TOP_item_words):
+                if train_SRC_item_words[index_src] == train_TOP_item_words[index_top]:
+                    index_src += 1
+                    index_top += 1
+                    j = index_top-1
+                    while train_TOP_item_words[j] not in labels:
+                        j -= 1
+                    if j == index_top-2:
+                        string_labels.append(t_labels["B-"+train_TOP_item_words[j]])
+                    else:
+                        string_labels.append(t_labels["I-"+train_TOP_item_words[j]])
+                else:
+                    index_top += 1
+            train_SRC_labels_list.append(string_labels)
+            print("train_SRC_labels_list",train_SRC_labels_list[i])
+
+            #####################################################################    
+            # # print(train_SRC)
+            # # print(longest_sentence)
+            # result.append(parse_tc(train_SRC_item,train_TOP_item))
+            # #print(result[i])
+            # #print("entities above")
+            # tags.append(generate_bio_tags(result[i]['sentence'], result[i]['entities']))
+            # #print(tags[i])
+            # train_SRC_labels_list = []
+            for word in string_labels:
+                #unique_labels.add(tag) if tag != '0' else None
+                f.write(f"{word} ")
+            f.write("\n")
+            print("--------------------------------------------------------")
     # with open('unique_labels.txt', 'w') as f2:
     #     f2.write("\n".join(unique_labels))
-    #train_SRC_data = data['train']['train.SRC']
-    co_embeddings = contextual_embeddings(train_SRC)
+    # train_SRC_data = data['train']['train.SRC']
+    #co_embeddings = contextual_embeddings(train_SRC)
     #print(co_embeddings[0])
     #co_embeddings = co_embeddings[0]
     # Convert tags to indices
+    assert 1==0 ,"letsgo"
     tag_indices = [[t_labels[tag] for _, tag in sentence_tags] for sentence_tags in tags]
     #print("tags",tags)
 

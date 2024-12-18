@@ -74,18 +74,18 @@ def extract_sentences():
     top_decoupled_data = []
 
     # Read source.txt
-    with open('../dataset/source.txt', 'r') as file:
+    with open('./dataset/source.txt', 'r') as file:
         source_data = ast.literal_eval(file.read())
 
     # Read top.txt
-    with open('../dataset/top.txt', 'r') as file:
+    with open('./dataset/top.txt', 'r') as file:
         top_data = ast.literal_eval(file.read())
 
     # Read top_decoupled.txt
-    with open('../dataset/top_decoupled.txt', 'r') as file:
-        top_decoupled_data = ast.literal_eval(file.read())
+    # with open('../dataset/top_decoupled.txt', 'r') as file:
+    #     top_decoupled_data = ast.literal_eval(file.read())
 
-    return source_data,top_data,top_decoupled_data
+    return source_data,top_data#,top_decoupled_data
 
 def convert_json_txt(file_path, output_file_path):
     top_data=[]
