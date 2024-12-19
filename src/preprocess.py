@@ -40,7 +40,6 @@ def read_dev_dataset(file_path):
     test_src = re.finditer(pattern_src, text)
     test_top = re.finditer(pattern_top, text)
     test_src_arr = []
-    test_top_decoupled_arr = []
     test_top_arr = []
 
 
@@ -49,10 +48,7 @@ def read_dev_dataset(file_path):
     
     for match in test_top:
         test_top_arr.append(match.group())
-    # pattern_top_decoupled = r'(?<=\))[\w ]*(?= \()|(?<=ORDER)[\w ]*(?= \()|(?<=PIZZAORDER)[\w ]*(?= \()|(?<=DRINKORDER)[\w ]*(?= \()'
-    # for match in test_top:
-    #     temp = re.sub(pattern_top_decoupled,'',match.group())
-    #     test_top_decoupled_arr.append(temp)
+
     return test_src_arr,test_top_arr
 
 def tokenize_text(text, tokenizer):
@@ -410,8 +406,8 @@ if __name__ == '__main__':
     # except Exception as e:
     #     raise ValueError(f"Failed to load dataset from {data_path}: {e}")
 
-    # train_SRC,train_TOP = read_dev_dataset('./dataset/PIZZA_dev.json')
-    train_SRC,train_TOP = extract_sentences()
+    train_SRC,train_TOP = read_dev_dataset('./dataset/PIZZA_dev.json')
+    # train_SRC,train_TOP = extract_sentences()
     train_SRC = train_SRC
     train_TOP = train_TOP
     
@@ -442,7 +438,7 @@ if __name__ == '__main__':
     labels = set(labels)
 
     print("checkpoint 1")
-    with open('./dataset/input_labels_top.txt', 'w') as f:
+    with open('./dataset/dev_labels_top.txt', 'w') as f:
         for i in range(train_SRC_size):
             train_SRC_item = train_SRC[i]
             train_TOP_item = train_TOP[i]
